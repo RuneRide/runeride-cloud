@@ -1,0 +1,4 @@
+target/
+.terraform/
+*.tfstate*
+.env
