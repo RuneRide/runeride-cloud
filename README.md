@@ -4,6 +4,7 @@ Service hébergé de RuneRide : stockage des rushs, montage et export GPU, sur A
 
 - `rust/` : moteur et serveur, copiés depuis Bike360 (`insta-build`: `render/`, `core/`, `server/`, `cloud/service`)
 - `terraform/` : infrastructure AWS
+- Les rushs des utilisateurs sont stockés sur S3.
 - Les comptes et la baseline gratuite vivent dans le dépôt `runeride`.
 
 Plan : [docs/plan.md](docs/plan.md)
