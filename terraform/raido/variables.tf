@@ -115,6 +115,26 @@ variable "domaine" {
   default     = "raido.runeride.fr"
 }
 
+# ---------------------------------------------------------------- jeton court (spec §7.1)
+
+variable "jwks_url" {
+  description = "JWKS de l'émetteur des jetons courts (classe PHP RuneRide\\Auth\\Jwt). Lu au démarrage de la fonction et à chaque kid inconnu (au plus toutes les 5 minutes)."
+  type        = string
+  default     = "https://app.runeride.fr/.well-known/jwks.json"
+}
+
+variable "jeton_emetteur" {
+  description = "Revendication iss attendue (RUNERIDE_JWT_ISSUER du PHP)."
+  type        = string
+  default     = "https://app.runeride.fr"
+}
+
+variable "jeton_audience" {
+  description = "Revendication aud attendue : « raido », distincte de l'audience « runeride » des jetons de session de l'appli, qui sont refusés."
+  type        = string
+  default     = "raido"
+}
+
 variable "origines_autorisees" {
   description = "Origines autorisées à appeler l'API depuis le navigateur (CORS). Pas de joker. Les ports locaux servent au développement de la PWA."
   type        = list(string)

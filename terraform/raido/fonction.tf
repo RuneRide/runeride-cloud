@@ -78,10 +78,14 @@ resource "aws_lambda_function" "calcul" {
   environment {
     variables = merge(
       {
-        RAIDO_SOURCE  = "s3"
-        RAIDO_BUCKET  = aws_s3_bucket.graphe.id
-        RAIDO_PREFIXE = local.prefixe
-        RAIDO_CACHE   = "/tmp/raido"
+        RAIDO_SOURCE   = "s3"
+        RAIDO_BUCKET   = aws_s3_bucket.graphe.id
+        RAIDO_PREFIXE  = local.prefixe
+        RAIDO_CACHE    = "/tmp/raido"
+        RAIDO_JETON    = "obligatoire"
+        RAIDO_JWKS_URL = var.jwks_url
+        RAIDO_EMETTEUR = var.jeton_emetteur
+        RAIDO_AUDIENCE = var.jeton_audience
       },
       var.fils != "" ? { RAIDO_THREADS = var.fils } : {},
       var.environnement_supplementaire,

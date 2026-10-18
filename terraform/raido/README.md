@@ -20,9 +20,11 @@ Module Terraform du calculateur de balade décrit dans `runeride/docs/itineraire
 ## Ce qui n'est PAS créé
 
 - Pas d'API Gateway (Function URL + OAC suffit et coûte 0), pas de VPC, pas de DynamoDB, pas de WAF.
-- Pas de **vérification du jeton court** côté AWS : la fonction ne vérifie pas encore le JWT RS256 délivré par le PHP
-  (spec §7.1) ; c'est une suite du jalon J3 (`raido-lambda`, JWKS de `app.runeride.fr`). Tant qu'elle n'existe pas,
-  l'API est **ouverte à qui connaît l'adresse** : ne pas rattacher le domaine public avant.
+- Pas de **délivrance** du jeton court : la fonction **vérifie** le JWT RS256 (`RAIDO_JETON=obligatoire`, JWKS
+  `jwks_url`, `iss` et `aud` attendus) et applique ses revendications (`type` = `petite_boucle` → `/v1/balade` seul et
+  distance ≤ `limite_km` ; `palier` ≠ `abonne` → découverte refusée), mais c'est le PHP de `app.runeride.fr` qui doit
+  l'émettre (`POST /api/balade/jeton`, spec §7.1, jalon J4) avec `aud = raido`, `exp` court (15 min) et ces revendications.
+  Sans ce point d'entrée PHP, aucun client légitime ne peut appeler l'API (elle répond `401`).
 - Pas de publication du graphe : voir la sortie `publier_graphe` (`aws s3 sync`), à faire à la main avant la
   première invocation. Un graphe = un dossier ; une nouvelle version va dans un autre dossier puis `prefixe_graphe`
   change (nouveau déploiement de la fonction, donc nouveau cache `/tmp`).
@@ -38,6 +40,7 @@ Function URL répond `403`. La PWA le fera avec `crypto.subtle.digest` (jalon J4
 CORPS='{"depart":{"lat":45.1885,"lon":5.7245},"duree_min":180,"evitements":["autoroutes","peages","non_revetu"]}'
 curl -s -X POST "https://<cloudfront>/v1/balade" \
   -H 'content-type: application/json' \
+  -H "authorization: Bearer <jeton court délivré par app.runeride.fr>" \
   -H "x-amz-content-sha256: $(printf '%s' "$CORPS" | sha256sum | cut -d' ' -f1)" \
   --data "$CORPS"
 ```
@@ -54,7 +57,7 @@ curl -s -X POST "https://<cloudfront>/v1/balade" \
    `GET /v1/sante`, puis le `POST` ci-dessus ; lire les journaux (démarrage : source, version du graphe, tuiles).
 5. Mesurer : démarrage à froid (chargement de `index.json` + tuiles depuis S3), `MaxMemoryUsed`, durée des boucles de
    120 et 200 km ; ajuster `memoire_mo` (vCPU) et `ephemere_mo`.
-6. Quand la vérification du jeton existe : `certificat_valide = true`, `terraform apply`, CNAME `raido` vers CloudFront.
+6. Quand le PHP délivre le jeton court (J4) : `certificat_valide = true`, `terraform apply`, CNAME `raido` vers CloudFront.
 7. Réserver la concurrence (`concurrence_reservee = 10`) dès que le quota du compte le permet.
 
 ## Coût
