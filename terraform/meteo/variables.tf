@@ -334,3 +334,9 @@ variable "forfait_limite_debit_ip" {
   type        = number
   default     = null
 }
+
+variable "alarme_cloudfront" {
+  description = "Crée l'alarme CloudFront (5xx) et son sujet SNS en us-east-1. À laisser à false si une politique de contrôle de service du compte interdit SNS hors eu-north-1 (constaté à la première application : AuthorizationError sur SNS:CreateTopic en us-east-1)."
+  type        = bool
+  default     = false
+}

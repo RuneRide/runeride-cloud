@@ -2,3 +2,7 @@ target/
 .terraform/
 *.tfstate*
 .env
+
+# Météo : plans et valeurs locales (ne jamais commiter)
+terraform/meteo/*.bin
+terraform/meteo/terraform.tfvars

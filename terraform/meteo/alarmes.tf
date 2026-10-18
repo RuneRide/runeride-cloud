@@ -27,13 +27,13 @@ resource "aws_sns_topic_subscription" "alertes" {
 
 # Les métriques CloudFront n'existent qu'en us-east-1 et une alarme ne peut notifier qu'un sujet de sa région.
 resource "aws_sns_topic" "alertes_virginie" {
-  count    = local.notifier ? 1 : 0
+  count    = local.notifier && var.alarme_cloudfront ? 1 : 0
   provider = aws.virginie
   name     = "${local.name}-alertes"
 }
 
 resource "aws_sns_topic_subscription" "alertes_virginie" {
-  count     = local.notifier ? 1 : 0
+  count     = local.notifier && var.alarme_cloudfront ? 1 : 0
   provider  = aws.virginie
   topic_arn = aws_sns_topic.alertes_virginie[0].arn
   protocol  = "email"
@@ -42,7 +42,7 @@ resource "aws_sns_topic_subscription" "alertes_virginie" {
 
 locals {
   actions          = local.notifier ? [aws_sns_topic.alertes[0].arn] : []
-  actions_virginie = local.notifier ? [aws_sns_topic.alertes_virginie[0].arn] : []
+  actions_virginie = local.notifier && var.alarme_cloudfront ? [aws_sns_topic.alertes_virginie[0].arn] : []
 }
 
 # 1. File de rebut non vide : un message a échoué var.file_reception_max fois (404 persistant, 403 S3…).
@@ -148,7 +148,7 @@ resource "aws_cloudwatch_metric_alarm" "erreurs_definitives" {
 
 # 7. CloudFront : taux d'erreurs 5xx supérieur à 1 % sur trois périodes de 5 minutes (métrique en us-east-1).
 resource "aws_cloudwatch_metric_alarm" "cloudfront_5xx" {
-  count               = local.alarmes ? 1 : 0
+  count               = local.alarmes && var.alarme_cloudfront ? 1 : 0
   provider            = aws.virginie
   alarm_name          = "${local.name}-cloudfront-5xx"
   alarm_description   = "Plus de 1 % de réponses 5xx de CloudFront."
