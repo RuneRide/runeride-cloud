@@ -1,0 +1,31 @@
+# Exemple de valeurs pour le module météo. Copier en terraform.tfvars (ou env/<nom>.tfvars) et adapter.
+# Aucune valeur secrète ici ; l'adresse de courriel est la vôtre, ne la committez pas si elle est personnelle.
+
+env    = "production"
+compte = "123456789012" # numéro du compte AWS (douze chiffres)
+
+# Zip produit par rust/tools/package-lambda.sh du dépôt runeride-weather (doit exister au moment du plan).
+chemin_zip_worker = "../../../runeride-weather/rust/target/lambda/rw-lambda-arm64.zip"
+
+# Réglages du worker (valeurs par défaut du module, docs/poc-rust/lambda.md §10.2).
+worker_memoire_mo      = 1769
+worker_timeout         = 120
+worker_ephemere_mo     = 512
+worker_concurrence_max = 10
+
+# Domaine : le certificat se valide d'abord, puis on passe certificat_valide à true.
+domaine           = "weather-data.runeride.fr"
+certificat_valide = false
+
+# Alertes (budget 1 $ et alarmes). Vide : ni budget ni notification.
+alerte_email = ""
+budget_usd   = 1
+
+# Poller et manifeste : à activer après vérification manuelle du worker (docs/mise-en-production.md §7).
+activer_poller    = false
+activer_manifeste = false
+# chemin_zip_poller    = "../../../runeride-weather/rust/target/lambda/rw-poller-arm64.zip"
+# chemin_zip_manifeste = "../../../runeride-weather/rust/target/lambda/rw-manifeste-arm64.zip"
+
+# Forfait CloudFront via Terraform (non validé) : laisser vide et le souscrire dans la console.
+# forfait_cloudfront = "FREE"
