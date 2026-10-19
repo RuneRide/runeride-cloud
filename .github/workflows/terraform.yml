@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: EUPL-1.2
+# Vérifications hors ligne de chaque module Terraform sur les pull requests : fmt, init sans backend,
+# validate. Aucun plan, aucun apply, aucun identifiant AWS.
+name: Terraform
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: fmt + validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.15.9'
+      # terraform/deploiement est hérité de l'essai Bike360 (source de module cassée), à réécrire au lot 2 : exclu.
+      - name: terraform fmt -check
+        shell: bash
+        run: |
+          set -eo pipefail
+          find terraform -name '*.tf' -printf '%h\n' | sort -u | grep -v '^terraform/deploiement$' | while read -r d; do
+            echo "== $d"; terraform -chdir="$d" fmt -check -diff
+          done
+      - name: terraform validate (init sans backend)
+        shell: bash
+        run: |
+          set -eo pipefail
+          find terraform -name '*.tf' -printf '%h\n' | sort -u | grep -v '^terraform/deploiement$' | while read -r d; do
+            echo "== $d"
+            terraform -chdir="$d" init -backend=false -input=false >/dev/null
+            terraform -chdir="$d" validate -no-color
+          done
