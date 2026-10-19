@@ -20,11 +20,12 @@ Module Terraform du calculateur de balade décrit dans `runeride/docs/itineraire
 ## Ce qui n'est PAS créé
 
 - Pas d'API Gateway (Function URL + OAC suffit et coûte 0), pas de VPC, pas de DynamoDB, pas de WAF.
-- Pas de **délivrance** du jeton court : la fonction **vérifie** le JWT RS256 (`RAIDO_JETON=obligatoire`, JWKS
-  `jwks_url`, `iss` et `aud` attendus) et applique ses revendications (`type` = `petite_boucle` → `/v1/balade` seul et
-  distance ≤ `limite_km` ; `palier` ≠ `abonne` → découverte refusée), mais c'est le PHP de `app.runeride.fr` qui doit
-  l'émettre (`POST /api/balade/jeton`, spec §7.1, jalon J4) avec `aud = raido`, `exp` court (15 min) et ces revendications.
-  Sans ce point d'entrée PHP, aucun client légitime ne peut appeler l'API (elle répond `401`).
+- La **délivrance** du jeton court est faite par le PHP de `app.runeride.fr` depuis le 19/10/2026 (`runeride` #9,
+  `POST /api/balade/jeton`, spec §7.1) : `aud = raido`, `exp` 15 min, revendications `palier`, `type`, `limite_km`,
+  sujet opaque. La fonction **vérifie** ce JWT RS256 (`RAIDO_JETON=obligatoire`, JWKS `jwks_url`, `iss` =
+  `jeton_emetteur` = `RUNERIDE_BASE_URL` du PHP, `aud` = `jeton_audience`) et applique ses revendications (`type` =
+  `petite_boucle` → `/v1/balade` seul et distance ≤ `limite_km` ; `palier` ≠ `abonne` → découverte refusée).
+  Chaîne exercée en local sans AWS, 13 cas (`runeride-carto/rust/tools/essai-jeton-local.sh`, `docs/raido.md` §2.6).
 - Pas de publication du graphe : voir la sortie `publier_graphe` (`aws s3 sync`), à faire à la main avant la
   première invocation. Un graphe = un dossier ; une nouvelle version va dans un autre dossier puis `prefixe_graphe`
   change (nouveau déploiement de la fonction, donc nouveau cache `/tmp`).
@@ -57,7 +58,8 @@ curl -s -X POST "https://<cloudfront>/v1/balade" \
    `GET /v1/sante`, puis le `POST` ci-dessus ; lire les journaux (démarrage : source, version du graphe, tuiles).
 5. Mesurer : démarrage à froid (chargement de `index.json` + tuiles depuis S3), `MaxMemoryUsed`, durée des boucles de
    120 et 200 km ; ajuster `memoire_mo` (vCPU) et `ephemere_mo`.
-6. Quand le PHP délivre le jeton court (J4) : `certificat_valide = true`, `terraform apply`, CNAME `raido` vers CloudFront.
+6. Rattacher le domaine : `certificat_valide = true`, `terraform apply`, CNAME `raido` vers CloudFront ; puis renseigner
+   `RUNERIDE_RAIDO_URL=https://raido.runeride.fr` dans le `.env` de l'application (la PWA ne montre la balade qu'avec).
 7. Réserver la concurrence (`concurrence_reservee = 10`) dès que le quota du compte le permet.
 
 ## Coût

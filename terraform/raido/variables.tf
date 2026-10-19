@@ -124,7 +124,7 @@ variable "jwks_url" {
 }
 
 variable "jeton_emetteur" {
-  description = "Revendication iss attendue (RUNERIDE_JWT_ISSUER du PHP)."
+  description = "Revendication iss attendue : RUNERIDE_BASE_URL du PHP (émetteur de la classe Jwt), sans barre oblique finale."
   type        = string
   default     = "https://app.runeride.fr"
 }
