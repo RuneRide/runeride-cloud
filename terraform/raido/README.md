@@ -26,6 +26,11 @@ Module Terraform du calculateur de balade décrit dans `runeride/docs/itineraire
   `jeton_emetteur` = `RUNERIDE_BASE_URL` du PHP, `aud` = `jeton_audience`) et applique ses revendications (`type` =
   `petite_boucle` → `/v1/balade` seul et distance ≤ `limite_km` ; `palier` ≠ `abonne` → découverte refusée).
   Chaîne exercée en local sans AWS, 13 cas (`runeride-carto/rust/tools/essai-jeton-local.sh`, `docs/raido.md` §2.6).
+- **Appariement des tracés** (`POST /v1/apparier`, privé) : la route n'existe que si `cle_service` est renseignée
+  (`RAIDO_CLE_SERVICE`, 32 caractères au moins, via `TF_VAR_cle_service`, jamais dans le dépôt) ; le PHP l'appelle avec l'en-tête
+  `x-cle-service` et `x-amz-content-sha256`. Elle passe par la même distribution CloudFront que les calculs : seule la clé la protège.
+  Valeur sensible mais sans accès aux données ; stockée dans la configuration de la fonction et l'état Terraform (choix sans coût ;
+  Secrets Manager : 0,40 $ par mois). Vide, rien n'est exposé et la découverte reste inactive côté application.
 - Pas de publication du graphe : voir la sortie `publier_graphe` (`aws s3 sync`), à faire à la main avant la
   première invocation. Un graphe = un dossier ; une nouvelle version va dans un autre dossier puis `prefixe_graphe`
   change (nouveau déploiement de la fonction, donc nouveau cache `/tmp`).

@@ -95,6 +95,25 @@ variable "fils" {
   default     = ""
 }
 
+variable "cle_service" {
+  description = <<-EOT
+    Clé de service de POST /v1/apparier (appariement des tracés, appelé par le PHP de app.runeride.fr, jamais par le navigateur) :
+    variable RAIDO_CLE_SERVICE de la fonction. Vide (défaut) : la route n'existe pas (404) et rien n'est exposé.
+    Valeur : au moins 32 caractères aléatoires, passée par TF_VAR_cle_service ou un tfvars hors Git, jamais écrite dans le dépôt ;
+    la même valeur va dans RUNERIDE_RAIDO_CLE_SERVICE côté application. Elle se retrouve dans la configuration de la fonction
+    (visible de qui peut la lire dans IAM) et dans l'état Terraform (chiffré, accès restreint) : c'est un choix sans coût, Secrets
+    Manager coûterait 0,40 $ par mois et par secret. La clé ne donne accès à aucune donnée : elle permet seulement de lancer des
+    appariements, donc de consommer du calcul. Rotation : changer la valeur des deux côtés, puis appliquer.
+  EOT
+  type        = string
+  default     = ""
+  sensitive   = true
+  validation {
+    condition     = var.cle_service == "" || length(var.cle_service) >= 32
+    error_message = "cle_service : vide (route désactivée) ou au moins 32 caractères."
+  }
+}
+
 variable "environnement_supplementaire" {
   description = "Variables d'environnement RAIDO_* supplémentaires. Jamais de secret ici."
   type        = map(string)
