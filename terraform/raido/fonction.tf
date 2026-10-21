@@ -1,5 +1,5 @@
 # Lambda « calcul » : binaire Rust raido-lambda (runeride-carto/rust/crates/raido-lambda), arm64, provided.al2023,
-# hors VPC. Routes : GET /v1/sante, POST /v1/balade, POST /v1/trajet. Exposée par une Function URL en AWS_IAM, que
+# hors VPC. Routes : GET /v1/sante, POST /v1/balade, POST /v1/trajet, et POST /v1/apparier (privée, clé de service). Exposée par une Function URL en AWS_IAM, que
 # seule la distribution CloudFront (OAC) peut invoquer.
 
 resource "aws_cloudwatch_log_group" "calcul" {
@@ -88,6 +88,7 @@ resource "aws_lambda_function" "calcul" {
         RAIDO_AUDIENCE = var.jeton_audience
       },
       var.fils != "" ? { RAIDO_THREADS = var.fils } : {},
+      var.cle_service != "" ? { RAIDO_CLE_SERVICE = var.cle_service } : {},
       var.environnement_supplementaire,
     )
   }

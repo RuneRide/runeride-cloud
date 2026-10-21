@@ -7,3 +7,4 @@ chemin_zip = "../../../runeride-carto/rust/target/lambda/raido-lambda-arm64.zip"
 # certificat_valide = true       # après émission du certificat (CNAME de validation créé chez o2switch)
 # concurrence_reservee = 10      # dès que le quota du compte le permet (spec §5.2)
 # memoire_mo = 3538              # ≈ 2 vCPU : pétales en parallèle, latence divisée, même coût en Go·s
+# cle_service = "..."          # NE PAS écrire ici : TF_VAR_cle_service dans l'environnement (32 caractères au moins) ; vide = appariement désactivé
