@@ -95,6 +95,20 @@ variable "fils" {
   default     = ""
 }
 
+variable "meteo_url" {
+  description = <<-EOT
+    Adresse de RuneRide Météo (sans barre finale, https), variable RAIDO_METEO_URL de la fonction : active la contrainte météo des
+    balades (POST /v1/route). Vide (défaut) : la contrainte renvoie « météo indisponible » et rien n'est appelé. À renseigner quand
+    la route de la météo (jalon J6 de runeride-weather) existera : le contrat des champs est provisoire (runeride-carto/docs/raido.md).
+  EOT
+  type        = string
+  default     = ""
+  validation {
+    condition     = var.meteo_url == "" || can(regex("^https://[a-z0-9.-]+(:[0-9]+)?$", var.meteo_url))
+    error_message = "meteo_url : vide, ou une adresse https sans chemin ni barre finale (par exemple https://weather-data.runeride.fr)."
+  }
+}
+
 variable "cle_service" {
   description = <<-EOT
     Clé de service de POST /v1/apparier (appariement des tracés, appelé par le PHP de app.runeride.fr, jamais par le navigateur) :

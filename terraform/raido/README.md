@@ -26,6 +26,8 @@ Module Terraform du calculateur de balade décrit dans `runeride/docs/itineraire
   `jeton_emetteur` = `RUNERIDE_BASE_URL` du PHP, `aud` = `jeton_audience`) et applique ses revendications (`type` =
   `petite_boucle` → `/v1/balade` seul et distance ≤ `limite_km` ; `palier` ≠ `abonne` → découverte refusée).
   Chaîne exercée en local sans AWS, 13 cas (`runeride-carto/rust/tools/essai-jeton-local.sh`, `docs/raido.md` §2.6).
+- **Contrainte météo** : `meteo_url` (`RAIDO_METEO_URL`, adresse https de RuneRide Météo sans barre finale) ; vide, la fonction rend « météo indisponible »
+  pour une requête qui la demande. La route `POST /v1/route` n'existe pas encore (J6 de runeride-weather) : ne pas renseigner avant.
 - **Appariement des tracés** (`POST /v1/apparier`, privé) : la route n'existe que si `cle_service` est renseignée
   (`RAIDO_CLE_SERVICE`, 32 caractères au moins, via `TF_VAR_cle_service`, jamais dans le dépôt) ; le PHP l'appelle avec l'en-tête
   `x-cle-service` et `x-amz-content-sha256`. Elle passe par la même distribution CloudFront que les calculs : seule la clé la protège.

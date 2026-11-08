@@ -89,6 +89,7 @@ resource "aws_lambda_function" "calcul" {
       },
       var.fils != "" ? { RAIDO_THREADS = var.fils } : {},
       var.cle_service != "" ? { RAIDO_CLE_SERVICE = var.cle_service } : {},
+      var.meteo_url != "" ? { RAIDO_METEO_URL = var.meteo_url } : {},
       var.environnement_supplementaire,
     )
   }
